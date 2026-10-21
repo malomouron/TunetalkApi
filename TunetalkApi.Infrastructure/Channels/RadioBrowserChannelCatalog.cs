@@ -31,9 +31,10 @@ public sealed class RadioBrowserChannelCatalog(
         var path = $"json/stations/bytag/{Uri.EscapeDataString(genre.Id)}?limit=24&hidebroken=true&order=clickcount&reverse=true";
         var stations = await GetAsync<List<RadioBrowserStation>>(path, cancellationToken);
         var channels = stations
-            .Where(station => station.LastCheckOk == true
+            .Where(station => station.IsAvailable
                 && !string.IsNullOrWhiteSpace(station.StationUuid)
-                && !string.IsNullOrWhiteSpace(station.Name))
+                && !string.IsNullOrWhiteSpace(station.Name)
+                && GetHttpsUri(station.UrlResolved) is not null)
             .Select(station => ToChannel(station, genre))
             .ToArray();
 
@@ -62,8 +63,9 @@ public sealed class RadioBrowserChannelCatalog(
         var path = $"json/stations/byuuid/{Uri.EscapeDataString(channelId)}";
         var stations = await GetAsync<List<RadioBrowserStation>>(path, cancellationToken);
         var station = stations.FirstOrDefault(item =>
-            item.LastCheckOk == true
-            && string.Equals(item.StationUuid, channelId, StringComparison.OrdinalIgnoreCase));
+            item.IsAvailable
+            && string.Equals(item.StationUuid, channelId, StringComparison.OrdinalIgnoreCase)
+            && GetHttpsUri(item.UrlResolved) is not null);
 
         if (station is null)
         {
@@ -167,5 +169,18 @@ public sealed class RadioBrowserChannelCatalog(
         [property: JsonPropertyName("url_resolved")] string? UrlResolved,
         [property: JsonPropertyName("favicon")] string? Favicon,
         [property: JsonPropertyName("tags")] string? Tags,
-        [property: JsonPropertyName("lastcheckok")] bool? LastCheckOk);
+        [property: JsonPropertyName("lastcheckok")] JsonElement LastCheckOk)
+    {
+        public bool IsAvailable => LastCheckOk.ValueKind switch
+        {
+            JsonValueKind.True => true,
+            JsonValueKind.Number => LastCheckOk.TryGetInt32(out var value) && value == 1,
+            JsonValueKind.String => IsAvailableStatus(LastCheckOk.GetString()),
+            _ => false
+        };
+
+        private static bool IsAvailableStatus(string? value) =>
+            string.Equals(value, "1", StringComparison.Ordinal)
+            || bool.TryParse(value, out var isAvailable) && isAvailable;
+    }
 }
