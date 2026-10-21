@@ -1,0 +1,10 @@
+.vs/
+**/bin/
+**/obj/
+**/TestResults/
+*.csproj.user
+*.db
+*.db-shm
+*.db-wal
+appsettings.Local.json
+secrets.json

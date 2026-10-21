@@ -1,0 +1,34 @@
+name: Conventional commits
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  validate:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out full history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate commit subjects
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          git log --format=%s --no-merges "$BASE_SHA..$HEAD_SHA" > "$RUNNER_TEMP/commit-subjects.txt"
+          if [ ! -s "$RUNNER_TEMP/commit-subjects.txt" ]; then
+            echo "No commits were found in the pull request."
+            exit 1
+          fi
+          if grep -Ev '^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\([a-z0-9][a-z0-9-]*\))?(!)?: .+' "$RUNNER_TEMP/commit-subjects.txt"; then
+            echo "Commit subjects must follow Conventional Commits."
+            exit 1
+          fi

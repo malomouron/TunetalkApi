@@ -1,0 +1,13 @@
+.git
+.vs
+**/bin
+**/obj
+**/TestResults
+**/*.db
+**/*.db-shm
+**/*.db-wal
+**/*.csproj.user
+Dockerfile
+docker-compose.yml
+README.md
+docs

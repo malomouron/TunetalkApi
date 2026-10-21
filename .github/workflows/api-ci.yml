@@ -1,0 +1,40 @@
+name: API CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: api-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Install .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Restore
+        run: dotnet restore TunetalkApi.Api.slnx
+
+      - name: Check formatting
+        run: dotnet format whitespace TunetalkApi.Api.slnx --verify-no-changes --no-restore
+
+      - name: Test
+        run: dotnet test TunetalkApi.Api.slnx --configuration Release --no-restore
+
+      - name: Publish API
+        run: dotnet publish TunetalkApi.Api/TunetalkApi.Api.csproj --configuration Release --no-restore --output artifacts/api
+
+      - name: Build container
+        run: docker build --tag tunetalk-api:ci .

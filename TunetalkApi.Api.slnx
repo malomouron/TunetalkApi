@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="TunetalkApi.Domain/TunetalkApi.Domain.csproj" />
+  <Project Path="TunetalkApi.Application/TunetalkApi.Application.csproj" />
+  <Project Path="TunetalkApi.Infrastructure/TunetalkApi.Infrastructure.csproj" />
+  <Project Path="TunetalkApi.Api/TunetalkApi.Api.csproj" />
+  <Project Path="TunetalkApi.Tests/TunetalkApi.Tests.csproj" />
+</Solution>
