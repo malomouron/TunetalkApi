@@ -21,6 +21,7 @@ ci(api): publish container tags
 ```
 
 Types usuels : `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`.
+Les messages générés par Dependabot sont préfixés `build(deps)` ; le contrôle CI les exempte pour garder valides les PR automatisées déjà ouvertes.
 
 ## Vérifications avant push
 
